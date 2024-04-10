@@ -5,7 +5,7 @@ use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use dns_lookup::lookup_host;
 mod tools;
 
-#[async_std::main]
+#[tokio::main]
 async fn main() {
     let matches = App::new("ipgeo")
         .version(crate_version!())
@@ -99,7 +99,7 @@ async fn main() {
                 if matches.is_present("verbose") {
                     println!("no IP address set, using network IP address \"{}\"", i);
                 };
-                
+
                 i
         }
     };
