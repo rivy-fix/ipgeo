@@ -1,14 +1,17 @@
-use clap::{crate_version, App, Arg, ArgMatches};
+use clap::{App, Arg, ArgMatches};
 use colored::Colorize;
+use dns_lookup::lookup_host;
 use ipgeolocate::{Locator, Service};
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
-use dns_lookup::lookup_host;
 mod tools;
+
+// spell-checker:ignore (ipgeo) geolocate geolocation ipgeo ipgeolocate ipwhois ipapi ipapico freegeoip
 
 #[tokio::main]
 async fn main() {
+    let version = version();
     let matches = App::new("ipgeo")
-        .version(crate_version!())
+        .version(version.as_str())
         .author("Grant Handy <grantshandy@gmail.com>")
         .about("Finds IP Information")
         .arg(
@@ -94,13 +97,13 @@ async fn main() {
     let mut ip: String = match matches.value_of("ADDRESS") {
         Some(value) => value.to_string(),
         None => {
-                let i = tools::get_network_ip().await;
+            let i = tools::get_network_ip().await;
 
-                if matches.is_present("verbose") {
-                    println!("no IP address set, using network IP address \"{}\"", i);
-                };
+            if matches.is_present("verbose") {
+                println!("no IP address set, using network IP address \"{}\"", i);
+            };
 
-                i
+            i
         }
     };
 
@@ -166,6 +169,31 @@ async fn main() {
     };
 }
 
+mod built_info {
+    include!(concat!(env!("OUT_DIR"), "/built.rs"));
+}
+
+fn version() -> String {
+    if !(built_info::GIT_DIRTY == Some(true))
+        && (built_info::GIT_VERSION == Some(built_info::PKG_VERSION))
+    {
+        return format!("{}", built_info::PKG_VERSION);
+    }
+    return format!(
+        "{}{}{}",
+        built_info::PKG_VERSION,
+        built_info::GIT_COMMIT_HASH_SHORT.map_or_else(|| "".to_owned(), |v| format!("+{}", v)),
+        built_info::GIT_DIRTY.map_or_else(
+            || "".to_owned(),
+            |b| if b {
+                "-dirty".to_owned()
+            } else {
+                "".to_owned()
+            }
+        )
+    );
+}
+
 // I'm particularly proud of this function.
 // It goes through all the fields set from the user and then print each of the variables individually.
 fn print_data(service: Service, app: ArgMatches, ip: Locator, is_dns: bool, address: &str) {
@@ -180,7 +208,7 @@ fn print_data(service: Service, app: ArgMatches, ip: Locator, is_dns: bool, addr
                             } else {
                                 address.to_string()
                             }
-                        },
+                        }
                         "city" => ip.city.clone(),
                         "country" => ip.country.clone(),
                         "ip" => ip.ip.clone(),
@@ -232,7 +260,7 @@ fn print_all_fields(app: &ArgMatches, ip: &Locator, service: Service, is_dns: bo
                 } else {
                     address.to_string()
                 }
-            },
+            }
             "city" => ip.city.clone(),
             "country" => ip.country.clone(),
             "ip" => ip.ip.clone(),

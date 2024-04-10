@@ -2,7 +2,7 @@
 name = "ipgeo"
 version = "0.1.8"
 authors = ["Grant Handy <grantshandy@gmail.com>"]
-edition = "2018"
+edition = "2021"
 license = "GPL-3.0"
 description = "A CLI tool that finds the location and other information of IP addresses or DNS addresses."
 repository = "https://github.com/DefunctLizard/ipgeocli/"
@@ -11,11 +11,22 @@ categories = ["network-programming", "command-line-utilities"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+# spell-checker:ignore (ipgeo) geolocate geolocation ipgeo ipgeolocate , chrono
+
 [dependencies]
-ipgeolocate = "0.3.5"
+built = { version = "0.7", features = ["chrono", "semver"] }
 clap = "2.33.3"
-surf = "2.2.0"
-dns-lookup = "1.0.5"
 colored = "2"
-# async-std = { version = "1.9.0", features = ["attributes"] }
+dns-lookup = "1.0.5"
+ipgeolocate = "0.3.5"
+surf = "2.2.0"
 tokio = { version = "1", features = ["full"] }
+
+[build-dependencies]
+built = { version = "0.7", features = [
+  "cargo-lock",
+  "dependency-tree",
+  "git2",
+  "chrono",
+  "semver",
+] }
